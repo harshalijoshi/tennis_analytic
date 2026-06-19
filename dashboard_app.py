@@ -47,9 +47,9 @@ gender_filter = st.sidebar.selectbox("Gender", ["All", "Men", "Women"])
 # -------------------------------
 st.header("📊 Summary Statistics")
 
-total_competitors = run_query("SELECT COUNT(*) AS total FROM Competitors")
-countries = run_query("SELECT COUNT(DISTINCT country) AS countries FROM Competitors")
-highest_points = run_query("SELECT MAX(points) AS max_points FROM Competitor_Rankings")
+total_competitors = run_query("SELECT COUNT(*) AS total FROM competitors")
+countries = run_query("SELECT COUNT(DISTINCT country) AS countries FROM competitors")
+highest_points = run_query("SELECT MAX(points) AS max_points FROM competitor_rankings")
 
 col1, col2, col3 = st.columns(3)
 col1.metric("Total Competitors", int(total_competitors['total'][0]))
@@ -63,8 +63,8 @@ st.header("👥 Competitors")
 
 query = """
 SELECT c.name, c.country, cr.ranking, cr.points, cr.movement, cr.competitions_played, cr.type, cr.gender
-FROM Competitors c
-JOIN Competitor_Rankings cr ON c.competitor_id = cr.competitor_id
+FROM competitors c
+JOIN competitor_rankings cr ON c.competitor_id = cr.competitor_id
 WHERE cr.ranking BETWEEN %s AND %s
 """
 params = [rank_range[0], rank_range[1]]
@@ -95,8 +95,8 @@ if not results.empty:
     if competitor_name:
         detail_query = """
         SELECT c.name, c.country, cr.ranking, cr.movement, cr.points, cr.competitions_played, cr.type, cr.gender
-        FROM Competitors c
-        JOIN Competitor_Rankings cr ON c.competitor_id = cr.competitor_id
+        FROM competitors c
+        JOIN competitor_rankings cr ON c.competitor_id = cr.competitor_id
         WHERE c.name = %s
         """
         detail = run_query(detail_query, [competitor_name])
@@ -109,8 +109,8 @@ st.header("🌍 Country-Wise Analysis")
 
 country_stats = run_query("""
 SELECT c.country, COUNT(c.competitor_id) AS competitor_count, AVG(cr.points) AS avg_points
-FROM Competitors c
-JOIN Competitor_Rankings cr ON c.competitor_id = cr.competitor_id
+FROM competitors c
+JOIN competitor_rankings cr ON c.competitor_id = cr.competitor_id
 GROUP BY c.country
 ORDER BY competitor_count DESC
 """)
@@ -131,8 +131,8 @@ st.header("🏆 Leaderboards")
 
 top_ranked = run_query("""
 SELECT c.name, c.country, cr.ranking, cr.points
-FROM Competitors c
-JOIN Competitor_Rankings cr ON c.competitor_id = cr.competitor_id
+FROM competitors c
+JOIN competitor_rankings cr ON c.competitor_id = cr.competitor_id
 ORDER BY cr.ranking ASC
 LIMIT 10
 """)
@@ -141,8 +141,8 @@ st.table(top_ranked)
 
 top_points = run_query("""
 SELECT c.name, c.country, cr.ranking, cr.points
-FROM Competitors c
-JOIN Competitor_Rankings cr ON c.competitor_id = cr.competitor_id
+FROM competitors c
+JOIN competitor_rankings cr ON c.competitor_id = cr.competitor_id
 ORDER BY cr.points DESC
 LIMIT 10
 """)
@@ -151,7 +151,7 @@ st.table(top_points)
 
 # Ranking distribution histogram
 st.subheader("Ranking Distribution")
-ranking_data = run_query("SELECT ranking FROM Competitor_Rankings")
+ranking_data = run_query("SELECT ranking FROM competitor_rankings")
 hist = alt.Chart(ranking_data).mark_bar().encode(
     x=alt.X("ranking", bin=alt.Bin(maxbins=50)),
     y="count()"
@@ -162,8 +162,8 @@ st.altair_chart(hist)
 st.subheader("Points vs Ranking (Top 20)")
 trend_data = run_query("""
 SELECT c.name, cr.ranking, cr.points
-FROM Competitors c
-JOIN Competitor_Rankings cr ON c.competitor_id = cr.competitor_id
+FROM competitors c
+JOIN competitor_rankings cr ON c.competitor_id = cr.competitor_id
 ORDER BY cr.ranking ASC
 LIMIT 20
 """)
